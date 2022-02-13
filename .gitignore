@@ -1,0 +1,11 @@
+# Python and Pycharm-related files
+.idea/
+__pycache__/
+
+# Other files
+log.txt
+startup.sh
+*.webp
+*.png
+*.jpg
+*.jpeg
