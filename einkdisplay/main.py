@@ -1,11 +1,17 @@
 #! /usr/bin/python3
 import os
+import socket
 import random
 from PIL import Image
 
-display_images_mode = True
-
 def get_random_image(images_folder = 'images', previous_images_file = 'images/previous_images.txt', image_freshness = 5):
+    """
+    Calculates which image should be shown next and tries not to repeat 'recent' images
+    :param images_folder: The name of the folder where the images are stored
+    :param previous_images_file: A .txt file which will store recent images shown on the display
+    :param image_freshness: The minimum number of images to be shown on the display before a repeat is shown
+    :return: A path to the next image to be shown on the display
+    """
     # image_freshness = number of images before seeing a previous image
     # A value of 5 means that a new image can't be one of the previous 5 images shown
     while True:
@@ -28,6 +34,16 @@ def get_random_image(images_folder = 'images', previous_images_file = 'images/pr
         return images_folder + '/' + random_file
 
 def display_image(path_to_image, saturation = 0.7, rotate = None, is_local = False, show_images = True):
+    """
+    Displays a new image on the einkdisplay
+    :param path_to_image: The file path of the image to display
+    :param saturation: How saturated the image on the display should be
+    :param rotate: Rotation needed on the image before displaying
+    :param is_local: Flag whether function is run locally or not (running locally will display the image on-screen as
+    opposed to trying to find the einkdisplay device
+    :param show_images: Flag whether or not to display images on-screen when being run locally
+    :return: Returns nothing
+    """
     if not is_local:
         from inky.inky_uc8159 import Inky
         inky = Inky()
@@ -51,14 +67,8 @@ def display_image(path_to_image, saturation = 0.7, rotate = None, is_local = Fal
         display_width, display_height = (448, 600)
     display_height_to_width_ratio = display_height / display_width
     image_height, image_width = image.size
-    print('Image:', path_to_image)
-    print('display_width:', display_width)
-    print('display_height:', display_height)
-    print('image_width:', image_width)
-    print('image_height:', image_height)
 
     ideal_image_height = image_width * display_height_to_width_ratio
-    print('ideal_image_height:', ideal_image_height)
     if is_local and show_images:
         image.show()
 
@@ -79,8 +89,6 @@ def display_image(path_to_image, saturation = 0.7, rotate = None, is_local = Fal
     # Display image
     if not is_local:
         final_image_height, final_image_width = image.size
-        print('final_image_width:', final_image_width)
-        print('final_image_height:', final_image_height)
         inky.set_image(image, saturation=saturation)
         inky.show()
 
@@ -110,13 +118,25 @@ def write_text():
     inky.set_image(img)
     inky.show()
 
-if display_images_mode:
-    random_image = get_random_image()
+def is_running_locally():
+    """
+    Uses hostname to determine whether this script is being run on the pi (remotely) or being run locally
+    :return: Boolean, True if running locally, False otherwise
+    """
+    pi_host_name = 'raspberrypizero'
+    current_host_name = socket.gethostname()
+    return current_host_name != pi_host_name
 
-    display_image(
-        path_to_image = random_image,
-        rotate = 'left',
-        is_local = False
-    )
-else:
-    write_text()
+if __name__ == "__main__":
+    display_images_mode = True
+
+    if display_images_mode:
+        random_image = get_random_image()
+
+        display_image(
+            path_to_image = random_image,
+            rotate = 'left',
+            is_local = is_running_locally()
+        )
+    else:
+        write_text()
