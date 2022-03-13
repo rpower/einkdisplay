@@ -2,9 +2,16 @@
 import os
 import socket
 import random
+from dotenv import load_dotenv
 from PIL import Image
 
-def get_random_image(images_folder = 'images', previous_images_file = 'images/previous_images.txt', image_freshness = 5):
+# Environment variables
+load_dotenv()
+PI_HOST_NAME = os.getenv('PI_HOST_NAME')
+
+def get_random_image(
+    images_folder = 'images', previous_images_file = 'images/previous_images.txt', image_freshness = 5
+):
     """
     Calculates which image should be shown next and tries not to repeat 'recent' images
     :param images_folder: The name of the folder where the images are stored
@@ -123,7 +130,7 @@ def is_running_locally():
     Uses hostname to determine whether this script is being run on the pi (remotely) or being run locally
     :return: Boolean, True if running locally, False otherwise
     """
-    pi_host_name = 'raspberrypizero'
+    pi_host_name = PI_HOST_NAME
     current_host_name = socket.gethostname()
     return current_host_name != pi_host_name
 
